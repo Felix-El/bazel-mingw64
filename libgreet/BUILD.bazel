@@ -1,0 +1,61 @@
+srcs = ["src/greet.cpp", "include/greet_private.h"]
+hdrs = ["public/greet/greet.h"]
+deps = []
+copts = ["-Ilibgreet/include"]
+includes = ["public"]
+defines = []
+visibility = ["//visibility:public"]
+
+# Static Version
+cc_library(
+    name = "greet",
+    srcs = srcs,
+    hdrs = hdrs,
+    deps = deps,
+    copts = copts,
+    includes = includes,
+    linkstatic = True,
+    visibility = visibility,
+)
+
+# Shared Version
+cc_binary(
+    name = "greet_shared",
+    srcs = srcs + hdrs,
+    deps = deps,
+    copts = copts,
+    includes = includes,
+    defines = defines + ["GREET_EXPORT"],
+    linkshared = True,
+    visibility = visibility
+)
+
+# filegroup(
+#     name = "greet_shared_import_lib",
+#     srcs = [":greet_shared.dll"],
+#     output_group = "interface_library",
+# )
+
+cc_import(
+    name = "greet_shared_import_target",
+#     interface_library = ":greet_shared_import_lib",
+    shared_library = ":greet_shared",
+)
+
+cc_library(
+    name = "greet_shared_dll",
+    hdrs = hdrs,
+    includes = includes,
+    defines = defines + ["GREET_IMPORT"],
+    deps = deps + [":greet_shared_import_target"],
+    visibility = visibility,
+)
+
+cc_test(
+    name = "greet_test",
+    size = "small",
+    srcs = ["test/greet_test.cpp"],
+    deps = ["@com_google_googletest//:gtest_main", ":greet"],
+    visibility = visibility,
+)
+

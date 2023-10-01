@@ -1,0 +1,2 @@
+build --incompatible_enable_cc_toolchain_resolution --subcommands --experimental_cc_shared_library --cxxopt=-std=c++17
+test --test_output=all
