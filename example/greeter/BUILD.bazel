@@ -5,8 +5,9 @@ cc_binary(
         "src/main.cpp",
         "src/util.cpp"
     ],
+    data = ["include"],
     copts = [
-        "-Iexample/greeter/include",
+        "-I$(rootpath include)",
     ],
     # dynamic_deps = [
     #     "//example/libgreet:greet_shared",

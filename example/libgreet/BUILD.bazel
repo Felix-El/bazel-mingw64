@@ -5,9 +5,11 @@ srcs = [
 
 hdrs = ["public/greet/greet.h"]
 
+data = ["include"]
+
 deps = []
 
-copts = ["-Iexample/libgreet/include"]
+copts = ["-I$(rootpath include)"]
 
 includes = ["public"]
 
@@ -20,6 +22,7 @@ cc_library(
     name = "greet",
     srcs = srcs,
     hdrs = hdrs,
+    data = data,
     copts = copts,
     includes = includes,
     linkstatic = True,
@@ -31,6 +34,7 @@ cc_library(
 cc_binary(
     name = "greet_shared",
     srcs = srcs + hdrs,
+    data = data,
     copts = copts,
     defines = defines + ["GREET_EXPORT"],
     includes = includes,
