@@ -3,12 +3,12 @@ cc_binary(
     srcs = [
         "include/util.h",
         "src/main.cpp",
-        "src/util.cpp"
+        "src/util.cpp",
     ],
-    data = ["include"],
     copts = [
         "-I$(rootpath include)",
     ],
+    data = ["include"],
     # dynamic_deps = [
     #     "//example/libgreet:greet_shared",
     # ],
@@ -18,4 +18,3 @@ cc_binary(
         "//example/libgreet:greet_shared_dll",
     ],
 )
-
