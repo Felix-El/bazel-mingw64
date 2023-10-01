@@ -1,32 +1,36 @@
-load("mingw.bzl", "mingw_toolchain")
+load("mingw64.bzl", "mingw_toolchain")
 
 package(default_visibility = ["//visibility:public"])
 
 filegroup(name = "empty")
 
-cc_toolchain_suite(
-    name = "mingw_suite",
-    toolchains = {
-        "x86_64": ":x86_64_mingw_toolchain",
-        "x86_32": ":x86_32_mingw_toolchain"
-    },
+# Define the toolchains, architecture [x86_64, i686] x threads [win32, posix]
+# and platforms named mingw-architecture-threads, i.e. mingw-x86_64-win32.
+
+mingw_toolchain(
+    name = "x86_64_mingw_posix_toolchain",
+    architecture = "x86_64",
+    compiler_components = ":empty",
+    threads = "posix",
 )
 
-mingw_toolchain(name = "x86_64_mingw_toolchain", compiler_components = ":empty", architecture = "x86_64")
-mingw_toolchain(name = "x86_32_mingw_toolchain", compiler_components = ":empty", architecture = "x86_32")
-
-platform(
-    name = "mingw_x86_64",
-    constraint_values = [
-        "@platforms//os:windows",
-        "@platforms//cpu:x86_64"
-    ],
-)
-platform(
-    name = "mingw_x86_32",
-    constraint_values = [
-        "@platforms//os:windows",
-        "@platforms//cpu:x86_32"
-    ],
+mingw_toolchain(
+    name = "x86_64_mingw_win32_toolchain",
+    architecture = "x86_64",
+    compiler_components = ":empty",
+    threads = "win32",
 )
 
+mingw_toolchain(
+    name = "x86_32_mingw_posix_toolchain",
+    architecture = "x86_32",
+    compiler_components = ":empty",
+    threads = "posix",
+)
+
+mingw_toolchain(
+    name = "x86_32_mingw_win32_toolchain",
+    architecture = "x86_32",
+    compiler_components = ":empty",
+    threads = "win32",
+)

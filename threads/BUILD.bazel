@@ -1,0 +1,13 @@
+package(default_visibility = ["//visibility:public"])
+
+constraint_setting(name = "threads")
+
+constraint_value(
+    name = "posix",
+    constraint_setting = "threads",
+)
+
+constraint_value(
+    name = "win32",
+    constraint_setting = "threads",
+)

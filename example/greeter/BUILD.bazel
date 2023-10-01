@@ -6,15 +6,15 @@ cc_binary(
         "src/util.cpp"
     ],
     copts = [
-        "-Igreeter/include",
+        "-Iexample/greeter/include",
     ],
     # dynamic_deps = [
-    #     "//libgreet:greet_shared",
+    #     "//example/libgreet:greet_shared",
     # ],
     visibility = ["//visibility:public"],
     deps = [
-        # "//libgreet:greet",
-        "//libgreet:greet_shared_dll",
+        # "//example/libgreet:greet",
+        "//example/libgreet:greet_shared_dll",
     ],
 )
 

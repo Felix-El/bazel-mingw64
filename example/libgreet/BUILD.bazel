@@ -1,9 +1,18 @@
-srcs = ["src/greet.cpp", "include/greet_private.h"]
+srcs = [
+    "src/greet.cpp",
+    "include/greet_private.h",
+]
+
 hdrs = ["public/greet/greet.h"]
+
 deps = []
-copts = ["-Ilibgreet/include"]
+
+copts = ["-Iexample/libgreet/include"]
+
 includes = ["public"]
+
 defines = []
+
 visibility = ["//visibility:public"]
 
 # Static Version
@@ -11,23 +20,23 @@ cc_library(
     name = "greet",
     srcs = srcs,
     hdrs = hdrs,
-    deps = deps,
     copts = copts,
     includes = includes,
     linkstatic = True,
     visibility = visibility,
+    deps = deps,
 )
 
 # Shared Version
 cc_binary(
     name = "greet_shared",
     srcs = srcs + hdrs,
-    deps = deps,
     copts = copts,
-    includes = includes,
     defines = defines + ["GREET_EXPORT"],
+    includes = includes,
     linkshared = True,
-    visibility = visibility
+    visibility = visibility,
+    deps = deps,
 )
 
 # filegroup(
@@ -38,24 +47,26 @@ cc_binary(
 
 cc_import(
     name = "greet_shared_import_target",
-#     interface_library = ":greet_shared_import_lib",
+    #     interface_library = ":greet_shared_import_lib",
     shared_library = ":greet_shared",
 )
 
 cc_library(
     name = "greet_shared_dll",
     hdrs = hdrs,
-    includes = includes,
     defines = defines + ["GREET_IMPORT"],
-    deps = deps + [":greet_shared_import_target"],
+    includes = includes,
     visibility = visibility,
+    deps = deps + [":greet_shared_import_target"],
 )
 
 cc_test(
     name = "greet_test",
     size = "small",
     srcs = ["test/greet_test.cpp"],
-    deps = ["@com_google_googletest//:gtest_main", ":greet"],
     visibility = visibility,
+    deps = [
+        ":greet",
+        "@com_google_googletest//:gtest_main",
+    ],
 )
-

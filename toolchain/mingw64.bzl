@@ -1,16 +1,18 @@
-""" MinGW64 Toolchain File """
+"""MinGW64 Toolchain File
+
+Use `mingw_toolchain()` to register a toolchain and a matching platform.
+Two architectures, `x86_64` and `x86_32` are supported (@platforms//cpu)
+and two threading models, `win32` and `posix` (@bazel-mingw64//threads).
+"""
 
 load("@bazel_tools//tools/build_defs/cc:action_names.bzl", "ACTION_NAMES")
 load(
     "@bazel_tools//tools/cpp:cc_toolchain_config_lib.bzl",
-    "action_config",
     "artifact_name_pattern",
     "feature",
     "flag_group",
     "flag_set",
-    "tool",
     "tool_path",
-    "variable_with_value",
 )
 load("@rules_cc//cc:defs.bzl", "cc_toolchain")
 
@@ -21,13 +23,19 @@ all_link_actions = [
     ACTION_NAMES.cpp_link_nodeps_dynamic_library,
 ]
 
-mingw_arch_map = { "x86_32": "i686", "x86_64": "x86_64" }
+mingw_arch_map = {"x86_32": "i686", "x86_64": "x86_64"}
 
 def _toolchain_config_info_impl(ctx):
     mingw_arch = mingw_arch_map[ctx.attr.architecture]
+    threads = ctx.attr.threads
+
     return cc_common.create_cc_toolchain_config_info(
         ctx = ctx,
         features = [
+            feature(
+                name = "copy_dynamic_libraries_to_binary",
+                enabled = True,
+            ),
             feature(
                 name = "supports_dynamic_linker",
                 enabled = True,
@@ -46,7 +54,7 @@ def _toolchain_config_info_impl(ctx):
                             flag_group(
                                 flags = [
                                     "-lstdc++",
-                                    "-lm"
+                                    "-lm",
                                 ],
                             ),
                         ]),
@@ -77,22 +85,22 @@ def _toolchain_config_info_impl(ctx):
             ),
         ],
         cxx_builtin_include_directories = [
-            "/usr/lib/gcc/{}-w64-mingw32/10-posix/include".format(mingw_arch),
-            "/usr/lib/gcc/{}-w64-mingw32/10-posix/include-fixed".format(mingw_arch),
+            "/usr/lib/gcc/{}-w64-mingw32/10-{}/include".format(mingw_arch, threads),
+            "/usr/lib/gcc/{}-w64-mingw32/10-{}/include-fixed".format(mingw_arch, threads),
             "/usr/share/mingw-w64/include",
         ],
-        toolchain_identifier = "local",     # Seen in tutorial but is it appropriate here?
-        host_system_name = "local",         # Same here.
+        toolchain_identifier = "local",  # Seen in tutorial but is it appropriate here?
+        host_system_name = "local",  # Same here.
         target_system_name = "{}-w64-mingw32".format(mingw_arch),
         target_cpu = ctx.attr.architecture,
         target_libc = "unknown",
-        compiler = "{}-w64-mingw32-g++-posix".format(mingw_arch),
+        compiler = "{}-w64-mingw32-g++-{}".format(mingw_arch, threads),
         abi_version = "unknown",
         abi_libc_version = "unknown",
         tool_paths = [
             tool_path(
                 name = "gcc",
-                path = "/usr/bin/{}-w64-mingw32-gcc-posix".format(mingw_arch),
+                path = "/usr/bin/{}-w64-mingw32-gcc-{}".format(mingw_arch, threads),
             ),
             tool_path(
                 name = "ld",
@@ -104,11 +112,11 @@ def _toolchain_config_info_impl(ctx):
             ),
             tool_path(
                 name = "cpp",
-                path = "/usr/bin/{}-w64-mingw32-cpp-posix".format(mingw_arch),
+                path = "/usr/bin/{}-w64-mingw32-cpp-{}".format(mingw_arch, threads),
             ),
             tool_path(
                 name = "gcov",
-                path = "/usr/bin/{}-w64-mingw32-gcov-posix".format(mingw_arch),
+                path = "/usr/bin/{}-w64-mingw32-gcov-{}".format(mingw_arch, threads),
             ),
             tool_path(
                 name = "nm",
@@ -122,12 +130,21 @@ def _toolchain_config_info_impl(ctx):
                 name = "strip",
                 path = "/usr/bin/{}-w64-mingw32-strip".format(mingw_arch),
             ),
-        ]
+        ],
     )
 
 mingw_toolchain_config = rule(
     implementation = _toolchain_config_info_impl,
     attrs = {
+        "threads": attr.string(
+            default = "win32",
+            doc = "Threading model",
+            mandatory = False,
+            values = [
+                "win32",
+                "posix",
+            ],
+        ),
         "architecture": attr.string(
             default = "x86_64",
             doc = "System architecture",
@@ -145,23 +162,25 @@ mingw_toolchain_config = rule(
     provides = [CcToolchainConfigInfo],
 )
 
-def mingw_toolchain(name, compiler_components, architecture):
+def mingw_toolchain(name, compiler_components, architecture, threads):
     """Define a MINGW toolchain
 
     Args:
       name: Name of the toolchain
       compiler_components: Components
       architecture: CPU of the toolchain
+      threads: Threading model
     """
 
     toolchain_config = name + "_config"
     mingw_arch = mingw_arch_map[architecture]
-    toolchain_id = "{}-w64-mingw32".format(mingw_arch)
+    toolchain_id = "{}-w64-mingw32-{}".format(mingw_arch, threads)
 
     mingw_toolchain_config(
         name = toolchain_config,
         architecture = architecture,
         toolchain_identifier = toolchain_id,
+        threads = threads,
     )
 
     cc_toolchain(
@@ -179,13 +198,20 @@ def mingw_toolchain(name, compiler_components, architecture):
         toolchain_identifier = toolchain_id,
     )
 
+    constraints = [
+        "@platforms//os:windows",
+        "@platforms//cpu:{}".format(architecture),
+        "@bazel-mingw64//threads:{}".format(threads),
+    ]
+
     native.toolchain(
-        name = "-".join(["cc-toolchain", architecture]),
-        target_compatible_with = [
-            "@platforms//cpu:{}".format(architecture),
-            "@platforms//os:windows",
-        ],
+        name = "cc-toolchain-{}-{}".format(architecture, threads),
+        target_compatible_with = constraints,
         toolchain = ":" + name,
         toolchain_type = "@bazel_tools//tools/cpp:toolchain_type",
     )
 
+    native.platform(
+        name = "mingw-{}-{}".format(architecture, threads),
+        constraint_values = constraints,
+    )

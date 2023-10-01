@@ -1,2 +1,8 @@
 build --incompatible_enable_cc_toolchain_resolution --subcommands --experimental_cc_shared_library --cxxopt=-std=c++17
 test --test_output=all
+
+build:wine64 --platforms=//toolchain:mingw-x86_64-win32
+run:wine64 --run_under="WINEPATH=/usr/x86_64-w64-mingw32/lib\\;/usr/lib/gcc/x86_64-w64-mingw32/10-posix wine64-stable"
+
+build:wine32 --platforms=//toolchain:mingw-x86_32-win32
+run:wine32 --run_under="WINEPATH=/usr/i686-w64-mingw32/lib\\;/usr/lib/gcc/i686-w64-mingw32/10-posix wine64-stable"
