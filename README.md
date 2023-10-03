@@ -11,6 +11,11 @@ x86/x64 but targetting Windows x86/x64.
 The example project to build with that toolchain is one shared library used
 by one executable. This is tailored to Ubuntu 22.04 with MinGW64 version 10.
 
+## Limitation
+
+Bazel needs to be built from [my fork](https://github.com/Felix-El/bazel) where a
+bug is fixed which otherfiles causes linking to fail.
+
 ## Building
 
 You need to install MinGW64 (once):
@@ -47,11 +52,11 @@ sudo apt install --no-install-recommends wine64 # for x86_64
 Then you can run for `x86_64`,
 
 ```bash
-bazel-dev run --config=wine64 //example/greeter Felix
+bazel run --config=wine64 //example/greeter Felix
 ```
 
 or for `i686`
 
 ```bash
-bazel-dev run --config=wine32 //example/greeter Felix
+bazel run --config=wine32 //example/greeter Felix
 ```
