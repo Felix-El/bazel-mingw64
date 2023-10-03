@@ -14,7 +14,7 @@ by one executable. This is tailored to Ubuntu 22.04 with MinGW64 version 10.
 ## Limitation
 
 Bazel needs to be built from [my fork](https://github.com/Felix-El/bazel) where a
-bug is fixed which otherfiles causes linking to fail.
+bug is fixed which otherwise causes linking to fail in upstream Bazel.
 
 ## Building
 
